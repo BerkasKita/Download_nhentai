@@ -110,12 +110,12 @@
     npm install axios
     ```
 + Jalankan Program:
-  + Setelah axios terpasang, jalankan file `download_Images_nhentai.js` dengan perintah:<br><br>
-  ```
-  node download_Images_nhentai.js ID_nhentai
-  ```
-  
-  `ID_nhentai` ganti dengan id dari nhentai.net
+  + Setelah axios terpasang, jalankan file `download_Images_nhentai.js` dengan perintah:
+    ```
+    node download_Images_nhentai.js ID_nhentai
+    ```
+    
+    `ID_nhentai` ganti dengan id dari nhentai.net
   
   + Program akan mulai mengunduh gambar dan menyimpannya ke direktori tempat file tersebut dijalankan.
  
