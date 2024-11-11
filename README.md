@@ -15,35 +15,52 @@
     const fs = require('fs');
     const path = require('path');
     
-    const id = 3069797; // ID galeri yang diinginkan
-    const max = 10; // Maksimal jumlah gambar
+    // Mendapatkan ID dan max dari command line arguments
+    const id = process.argv[2]; // Ambil ID dari argumen pertama
+    const max = parseInt(process.argv[3], 10); // Ambil max dari argumen kedua dan ubah menjadi angka
+    const formats = ['jpg', 'png', 'webp']; // Daftar format yang akan dicoba
+    
+    // Validasi ID dan max
+    if (!id || isNaN(max)) {
+      console.error('ID galeri dan jumlah maksimal gambar tidak disediakan atau tidak valid!');
+      console.error('Gunakan perintah: node downloadImages.js <id> <max>');
+      process.exit(1); // Keluar dari program jika ID atau max tidak disediakan atau tidak valid
+    }
     
     // Membuat array URL gambar secara dinamis
     const imageUrls = [];
     for (let i = 1; i <= max; i++) {
-      imageUrls.push(`https://i5.nhentai.net/galleries/${id}/${i}.jpg`);
+      imageUrls.push(`https://i5.nhentai.net/galleries/${id}/${i}`);
     }
     
-    // Fungsi untuk mengunduh gambar
-    async function downloadImage(url, index) {
-      try {
-        const response = await axios({
-          url,
-          method: 'GET',
-          responseType: 'stream'
-        });
+    // Fungsi untuk mengunduh gambar dengan mencoba beberapa format
+    async function downloadImage(baseUrl, index) {
+      for (let format of formats) {
+        try {
+          const url = `${baseUrl}.${format}`;
+          const response = await axios({
+            url,
+            method: 'GET',
+            responseType: 'stream'
+          });
     
-        const fileName = `image${index + 1}.jpg`; // Menentukan nama file
-        const writer = fs.createWriteStream(path.resolve(__dirname, fileName));
+          const fileName = `image${index + 1}.${format}`; // Menentukan nama file
+          const writer = fs.createWriteStream(path.resolve(__dirname, fileName));
     
-        response.data.pipe(writer);
+          response.data.pipe(writer);
     
-        return new Promise((resolve, reject) => {
-          writer.on('finish', resolve);
-          writer.on('error', reject);
-        });
-      } catch (error) {
-        console.error(`Gagal mengunduh gambar pada indeks ${index}: ${error.message}`);
+          return new Promise((resolve, reject) => {
+            writer.on('finish', resolve);
+            writer.on('error', reject);
+          });
+        } catch (error) {
+          if (error.response && error.response.status === 404) {
+            console.log(`Format ${format} tidak ditemukan untuk gambar pada indeks ${index}. Mencoba format berikutnya...`);
+          } else {
+            console.error(`Terjadi kesalahan pada gambar indeks ${index} dengan format ${format}: ${error.message}`);
+            break; // Jika error bukan karena 404, hentikan percobaan format berikutnya
+          }
+        }
       }
     }
     
@@ -54,6 +71,7 @@
       }
       console.log('Semua gambar telah diunduh');
     }
+    
     downloadAllImages();
     ```
 + Buka Terminal atau Command Prompt:
@@ -70,7 +88,7 @@
 + Jalankan Program:
   + Setelah axios terpasang, jalankan file `downloadImages.js` dengan perintah:
   ```
-  node downloadImages.js
+  node downloadImages.js 3107705 56
   ```
   + Program akan mulai mengunduh gambar dan menyimpannya ke direktori tempat file tersebut dijalankan.
  
